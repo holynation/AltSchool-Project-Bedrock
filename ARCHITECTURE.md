@@ -9,8 +9,6 @@
 - Add **CI/CD** (GitHub Actions) to run `terraform plan` on Pull Requests and `terraform apply` on merges to `main` (via GitHub OIDC).
 - Keep costs low and clean up fast.
 
-> Non‑goals (nice to have): ALB/Ingress + ACM + Route 53 + external DB (RDS/DynamoDB). These can be added after core is working.
-
 ---
 
 ## 2) High‑level Design (how things fit together)
@@ -57,7 +55,6 @@ flowchart TB
 - **Public subnets**: ELB/ALB and (optionally) nodes for demo to avoid NAT cost.
 - **Private subnets**: production node group behind **NAT** (safer, but costs money).
 - **Security groups**: EKS control plane <-> nodes; NodePort/ALB rules if exposing services.
-- **IRSA (optional)**: enabled via EKS OIDC provider for fine‑grained pod access to AWS.
 
 ---
 
@@ -75,7 +72,7 @@ flowchart TB
 - **NAT Gateway**: billed hourly + data (can be most expensive in labs).
 - **EC2 nodes**: billed per instance hour. Use **t3.medium**, 2 nodes.
 - **ELB/ALB**: billed hourly + LCUs.
-- **Tip**: For lab, run nodes in **public subnets** (no NAT), scale down node count, **destroy** after grading.
+- **Note**: For lab, run nodes in **public subnets** (no NAT), scale down node count, **destroy** after grading.
 
 ---
 

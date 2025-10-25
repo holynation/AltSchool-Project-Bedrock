@@ -1,11 +1,11 @@
 # Project Bedrock — EKS Assessment
 
-Simple, safe guide to run the Retail Store Sample App locally (Minikube) and in AWS EKS (Terraform). Explanations are step‑by‑step; commands are copy‑paste.
+Simple, safe guide to run the Retail Store Sample App locally (Minikube) and in AWS EKS (Terraform).
 
 ## Repo layout
 ```
 .
-├─ app/                         # (optional) your app fork or manifests
+├─ app/                        
 ├─ infra/                       # Terraform IaC
 │  ├─ versions.tf
 │  ├─ providers.tf
@@ -18,14 +18,6 @@ Simple, safe guide to run the Retail Store Sample App locally (Minikube) and in 
 │  └─ rbac_readonly.yaml
 └─ .github/workflows/terraform.yml
 ```
-
-## Prerequisites
-- Ubuntu in VirtualBox: **4GB RAM**, **2 vCPU**, **40GB** disk.
-- Installed: `docker`, `kubectl`, `minikube`, `helm`, `terraform >= 1.6`, `awscli v2`, `git`.
-- AWS account (you will be billed while the cluster exists). **Destroy when done.**
-- GitHub repo and Actions enabled.
-
----
 
 ## 1) Local run (Minikube) — free
 ```bash
@@ -46,13 +38,9 @@ kubectl -n retail get svc
 minikube -n retail service ui --url   # open printed URL
 ```
 
-**Troubleshoot**  
-- ImagePullBackOff → check internet, retry `kubectl rollout restart deployment <name>`  
-- CrashLoop → `kubectl -n retail logs deploy/<svc>`
-
 ---
 
-## 2) AWS EKS (Terraform) — billable ⚠️
+## 2) AWS EKS (Terraform)
 > Keep node count small; avoid NAT (or destroy ASAP).
 
 ```bash
@@ -63,8 +51,6 @@ terraform validate
 terraform plan -out tfplan
 ```
 
-**Do you want me to run the next command?**  
-If yes (creates billable resources):
 
 ```bash
 terraform apply "tfplan"
@@ -86,8 +72,7 @@ kubectl -n retail patch svc ui -p '{"spec":{"type":"LoadBalancer"}}'
 kubectl -n retail get svc ui -w  # wait for EXTERNAL-IP
 ```
 
-**Cleanup (stop costs)**  
-**Do you want me to run the next command?**
+**Cleanup (stop costs)**
 ```bash
 cd infra
 terraform destroy
@@ -105,7 +90,7 @@ Usage (on developer machine):
 aws configure
 aws eks update-kubeconfig --name innovatemart-eks --region us-east-1
 kubectl get pods -A        # works
-kubectl apply -f something # should be forbidden
+# kubectl apply -f something # should be forbidden
 ```
 
 ---
@@ -141,25 +126,6 @@ steps:
 - `main` protected; changes via PR.
 - Feature branches: `feat/*`, `fix/*`.
 - PR: review + `terraform plan`.
-- Merge to `main`: auto‑apply (or require manual approval using environments).
+- Merge to `main`: auto‑apply (or require manual approval using environments).W
 
 ---
-
-## 6) Deliverables (submit these)
-- **Git repo link** (this repo).
-- **2‑page architecture doc** (`ARCHITECTURE.md`).
-- **Credentials instructions** for read‑only developer (in this README).
-- (Optional) Screenshots: `kubectl get nodes`, `kubectl get pods -n retail`, service EXTERNAL-IP.
-
----
-
-## 7) Troubleshooting quickies
-- `kubectl get nodes` empty → `aws eks update-kubeconfig ...`; wait 1–2 mins for aws‑auth.
-- NodeGroup fails → check node IAM role policies; subnets have IGW/NAT route.
-- No EXTERNAL-IP → ensure service is `LoadBalancer` in a public subnet or install ALB Ingress Controller.
-- GitHub OIDC fails → verify role trust policy `repo:<org>/<repo>:*` and `aud=sts.amazonaws.com`.
-
----
-
-## License
-MIT (or your choice)
